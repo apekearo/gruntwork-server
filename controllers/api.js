@@ -2,6 +2,7 @@ var express = require("express");
 var db = require("../models");
 var router = express.Router();
 
+// User APIs
 // get all users
 // get all employees
 // get all employers
@@ -98,6 +99,7 @@ router.delete("/user/:id", function (req, res) {
 		})
 });
 
+// Posts APIs
 router.get('/posts', function (req, res) {
 	db.JobPost.findAll({
 			include: [{
@@ -119,6 +121,34 @@ router.post('/posts', function (req, res) {
 		.then(post => res.json(post))
 		.catch(err => res.status(500).json(err))
 });
+
+router.post('/register', function (req, res) {
+	const user = req.body.user;
+	db.User.create(user)
+		.then(user => {
+      delete user.dataValues.password;
+      res.json(user)
+    })
+		.catch(err => res.status(500).json(err))
+})
+
+router.post('/login', function (req, res) {
+  const email = req.body.email;
+  const password = req.body.password;
+	db.User.findOne({
+    where: {
+      email
+    }
+  })
+  .then(user => {
+    if (user.password !== password) {
+      res.status(401).json({message: 'You ain\'t no my master' })
+    }
+    delete user.dataValues.password;
+    res.json(user);
+  })
+  .catch(err => res.status(500).json(err))
+})
 
 
 // router.get('/index', function (){

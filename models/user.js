@@ -3,7 +3,9 @@ module.exports = function (sequelize, DataTypes) {
         email: {
             type: DataTypes.STRING,
             allowNull: false,
-            len: [1]
+            len: [1],
+            unique: true,
+            isEmail: true
         },
         password: {
             type: DataTypes.STRING,
