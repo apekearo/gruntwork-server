@@ -2,11 +2,9 @@ var faker = require('faker')
 var db = require('../models')
 
 var numOfUsers = 10
-var roles = ['employee', 'employer']
 while (numOfUsers > 0) {
     numOfUsers -= 1;
     db.User.create({
-        role: roles[Math.floor(Math.random() * 2)],
         email: faker.internet.email(),
         password: faker.internet.password(),
         firstName: faker.name.firstName(),

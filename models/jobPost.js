@@ -22,7 +22,12 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             default: false
-        }
+        },
+        role: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            isIn: [['employee', 'employer']]
+        },
     });
 
     JobPost.associate = function (db) {

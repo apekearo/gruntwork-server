@@ -1,10 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
     var User = sequelize.define("User", {
-        role: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            isIn: [['employee', 'employer']]
-        },
         email: {
             type: DataTypes.STRING,
             allowNull: false,
