@@ -25,24 +25,14 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.STRING,
             allowNull: true
         },
-
         phone: {
             type: DataTypes.STRING,
             allowNull: false
-        },
-        // skills: {
-        //     type: DataTypes.STRING,
-        //     allowNull: false,
-        //     validate: {
-        //         len: [1, 144]
-        //     }
-        // },
-        // jobLocation: {
-        //     type: DataTypes.STRING
-        // },
-        // hasCar: {
-        //     type: DataTypes.BOOLEAN
-        // }
-    })
+        }
+    });
+
+    User.associate = function (db) {
+        User.hasMany(db.JobPost);
+    };
     return User;
-}
+};
