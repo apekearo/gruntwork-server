@@ -1,6 +1,4 @@
-/**
- * Created by chengluli on 08/08/2017.
- */
+
 module.exports = function (sequelize, DataTypes) {
     var JobPost = sequelize.define("JobPost", {
         payAmount: {
@@ -27,6 +25,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.STRING,
             allowNull: false,
             isIn: [['employee', 'employer']]
+        },
+        locationZip: {
+            type: DataTypes.INTEGER.UNSIGNED,
+            allowNull: false
         },
     });
 

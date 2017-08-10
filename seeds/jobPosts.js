@@ -14,6 +14,7 @@ while (numOfPosts > 0) {
         phone: faker.phone.phoneNumber(),
         description: faker.lorem.sentence(),
         hasCar: numOfPosts % 2 === 0,
-        UserId: Math.ceil(Math.random() * 10)
+        UserId: Math.ceil(Math.random() * 10),
+        locationZip: faker.address.zipCode()
     }).then(post => console.log(`post ${post.id} has been created`))
 }
