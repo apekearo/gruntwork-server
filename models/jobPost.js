@@ -27,7 +27,7 @@ module.exports = function (sequelize, DataTypes) {
             isIn: [['employee', 'employer']]
         },
         locationZip: {
-            type: DataTypes.INTEGER.UNSIGNED,
+            type: DataTypes.STRING,
             allowNull: false
         },
     });

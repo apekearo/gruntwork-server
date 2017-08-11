@@ -117,6 +117,8 @@ router.get('/posts', function (req, res) {
 
 router.post('/posts', function (req, res) {
 	const post = req.body.post;
+	const userId = req.body.userId;
+	post.UserId = userId;
 	db.JobPost.create(post)
 		.then(post => res.json(post))
 		.catch(err => res.status(500).json(err))
@@ -124,30 +126,33 @@ router.post('/posts', function (req, res) {
 
 router.post('/register', function (req, res) {
 	const user = req.body.user;
+	console.log(req.body);
 	db.User.create(user)
 		.then(user => {
-      delete user.dataValues.password;
-      res.json(user)
-    })
+			delete user.dataValues.password;
+			res.json(user)
+		})
 		.catch(err => res.status(500).json(err))
 })
 
 router.post('/login', function (req, res) {
-  const email = req.body.email;
-  const password = req.body.password;
+	const email = req.body.email;
+	const password = req.body.password;
 	db.User.findOne({
-    where: {
-      email
-    }
-  })
-  .then(user => {
-    if (user.password !== password) {
-      res.status(401).json({message: 'You ain\'t no my master' })
-    }
-    delete user.dataValues.password;
-    res.json(user);
-  })
-  .catch(err => res.status(500).json(err))
+			where: {
+				email
+			}
+		})
+		.then(user => {
+			if (user.password !== password) {
+				res.status(401).json({
+					message: 'You ain\'t no my master'
+				})
+			}
+			delete user.dataValues.password;
+			res.json(user);
+		})
+		.catch(err => res.status(500).json(err))
 })
 
 
