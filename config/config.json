@@ -1,7 +1,7 @@
 {
     "development": {
     "username": "root",
-        "password": null,
+        "password": "pinky1",
         "database": "gruntwork",
         "host": "127.0.0.1",
         "dialect": "mysql"
@@ -14,10 +14,10 @@
         "dialect": "mysql"
 },
     "production": {
-    "username": "root",
-        "password": null,
-        "database": "database_production",
-        "host": "127.0.0.1",
+        "username": "g59b5vi71rg4z50k",
+        "password": "ns5n4p2prmo9ikwc",
+        "database": "Heyearl",
+        "host": "gzp0u91edhmxszwf.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
         "dialect": "mysql"
     }
 }

@@ -1,6 +1,6 @@
 var express = require ("express");
 var bodyParser= require("body-parser");
-var morgan = require("morgan")
+var morgan = require("morgan");
 
 var PORT = process.env.PORT || 3000;
 var app = express();
@@ -24,7 +24,7 @@ app.use(allowCrossDomain);
 app.use('/api', router);
 app.use('*', function (req, res){
     // res.render('./views/index.html')
-    res.sendFile('./public/index.html');
+    res.sendFile('./public/index.html', { root: __dirname });
 });
 
 // app.use(function(err, req, res, next) {
