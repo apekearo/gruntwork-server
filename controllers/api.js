@@ -8,9 +8,9 @@ var router = express.Router();
 // get all employers
 
 router.post('/textit/:question', function (req, res) {
-	var question = req.params.question;
-	var value = req.body.text;
-	var phone = req.body.phone;
+	const question = req.params.question;
+	const value = req.body.text.trim().toLowerCase();
+	const phone = req.body.phone;
 
 	console.log(value, phone);
 	if (!value) {
@@ -26,13 +26,62 @@ router.post('/textit/:question', function (req, res) {
 				phone,
 				role: value
 			})
-			.then(post => console.log('A new post is created'))
-			.catch(err => console.log(err.message)) 
+			.then(post => {
+				res.json({hasDone: post.hasFinishedCreation()})
+			})
+			.catch(err => console.log(err.message));
 			break;
-        case 'name':  
+        case 'payAmount':
+            updatePost(phone, res, question, value);
             break;
+        case 'description':
+            updatePost(phone, res, question, value);
+            break;
+        case 'hasCar':
+            updatePost(phone, res, question, value);
+            break;
+        case 'locationZip':
+            updatePost(phone, res, question, value);
+            break;
+		default:
+			res.status(401).json({message: 'Not valid'});
+			break;
 	}
 });
+
+/**
+ * updatePost
+ * A helper method to update value of a jobPost through user's phone number.
+ * @param {number} phone - User's phone number
+ * @param {object} res - res object of express router
+ * @param {string} key - which key you want to update for a jobPost
+ * @param {any} value - what is the new value of that jobPost's key
+ * @returns {Promise.<TResult>}
+ */
+function updatePost(phone, res, key, value) {
+	// If you want to always have only ONE record in the database of a jobpost with that phone
+	// number, use findOrCreate instead of findOne. findOne will create a new record in the database
+	// each time a 'role' question got answered
+    return db.JobPost.findOne({
+		where: { phone },
+        order: [ [ 'createdAt', 'DESC' ]]
+    })
+        .then(post => {
+            if (post) {
+                post.updateAttributes({
+                    [key]: value
+                })
+                    .then(updatedPost => {
+                        res.json({message: 'You have successfully updated it!'})
+                    })
+                    .catch(err => console.log(err.message));
+            }else {
+            	const err = new Error('You should have one post for that number');
+            	res.status(404).json({message: err.message});
+			}
+        })
+        .catch(err => console.log(err.message));
+}
 
 
 //!!!Why doesn't the models all require sequalize!!
@@ -211,7 +260,8 @@ router.get('/posts', function (req, res) {
 			}]
 		})
 		.then((posts) => {
-			res.json(posts);
+			const filteredPosts = posts.filter(post => post.hasFinishedCreation());
+			res.json(filteredPosts);
 		})
 		.catch(err => res.status(500).json(err))
 });

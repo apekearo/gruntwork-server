@@ -1,18 +1,18 @@
 {
     "development": {
-    "username": "root",
-        "password": "pinky1",
+        "username": "root",
+        "password": "",
         "database": "gruntwork",
         "host": "127.0.0.1",
         "dialect": "mysql"
-},
+    },
     "test": {
-    "username": "root",
+        "username": "root",
         "password": null,
         "database": "database_test",
         "host": "127.0.0.1",
         "dialect": "mysql"
-},
+    },
     "production": {
         "username": "x0qllgdwtusza0qo",
         "password": "wx4zxtwi701u6kpz",
