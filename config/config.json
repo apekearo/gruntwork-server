@@ -1,7 +1,7 @@
 {
     "development": {
         "username": "root",
-        "password": "pinky1",
+        "password": "",
         "database": "gruntwork",
         "host": "127.0.0.1",
         "dialect": "mysql"
