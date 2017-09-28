@@ -1,11 +1,49 @@
 var express = require("express");
 var db = require("../models");
 var router = express.Router();
+// These three lines should be put outside of the fuction
+	// on top of the file
+	 const accountSid = 'AC7aa3c87df5d67ff71d034fa21d97f564';
+	 const authToken = '1ee04980696810bea25d604b8d56f9f5';
+	 const client = require('twilio')(accountSid, authToken);
 
 // User APIs
 // get all users
 // get all employees
 // get all employers
+
+router.post('textit/posts', function (req, res) {
+	
+
+	var phone = req.body.phone;
+	var zipCode = req.body.text;
+
+	// Step1: get the first jobPost data with sequelize near the zip code
+	db.JobPost.findOne({
+		where: {
+			locationZip: zipCode
+		},
+		order: [
+			['createdAt', 'DESC']
+		]
+	}).then(post => {
+		var text = `Pay Amount: ${post.payAmount}\n 
+		phone number: ${post.phone}` 
+		// Step2: send the jobpost back to users 
+		client.messages.create({
+				body: text, // here is your text message
+				to: phone, // replace this with use's phone number
+				from: '+12544002317',
+			})
+			.then((message) => {
+				//this particular res.json isn't needed for the file as much
+				//as it ends the file, and isn't left hangin
+				res.json({
+					message: 'Text has been sent'
+				})
+			});
+	})
+})
 
 router.post('/textit/:question', function (req, res) {
 	const question = req.params.question;
@@ -23,28 +61,32 @@ router.post('/textit/:question', function (req, res) {
 	switch (question) {
 		case 'role':
 			db.JobPost.create({
-				phone,
-				role: value
-			})
-			.then(post => {
-				res.json({hasDone: post.hasFinishedCreation()})
-			})
-			.catch(err => console.log(err.message));
+					phone,
+					role: value
+				})
+				.then(post => {
+					res.json({
+						hasDone: post.hasFinishedCreation()
+					})
+				})
+				.catch(err => console.log(err.message));
 			break;
-        case 'payAmount':
-            updatePost(phone, res, question, value);
-            break;
-        case 'description':
-            updatePost(phone, res, question, value);
-            break;
-        case 'hasCar':
-            updatePost(phone, res, question, value);
-            break;
-        case 'locationZip':
-            updatePost(phone, res, question, value);
-            break;
+		case 'payAmount':
+			updatePost(phone, res, question, value);
+			break;
+		case 'description':
+			updatePost(phone, res, question, value);
+			break;
+		case 'hasCar':
+			updatePost(phone, res, question, value);
+			break;
+		case 'locationZip':
+			updatePost(phone, res, question, value);
+			break;
 		default:
-			res.status(401).json({message: 'Not valid'});
+			res.status(401).json({
+				message: 'Not valid'
+			});
 			break;
 	}
 });
@@ -62,25 +104,33 @@ function updatePost(phone, res, key, value) {
 	// If you want to always have only ONE record in the database of a jobpost with that phone
 	// number, use findOrCreate instead of findOne. findOne will create a new record in the database
 	// each time a 'role' question got answered
-    return db.JobPost.findOne({
-		where: { phone },
-        order: [ [ 'createdAt', 'DESC' ]]
-    })
-        .then(post => {
-            if (post) {
-                post.updateAttributes({
-                    [key]: value
-                })
-                    .then(updatedPost => {
-                        res.json({message: 'You have successfully updated it!'})
-                    })
-                    .catch(err => console.log(err.message));
-            }else {
-            	const err = new Error('You should have one post for that number');
-            	res.status(404).json({message: err.message});
+	return db.JobPost.findOne({
+			where: {
+				phone
+			},
+			order: [
+				['createdAt', 'DESC']
+			]
+		})
+		.then(post => {
+			if (post) {
+				post.updateAttributes({
+						[key]: value
+					})
+					.then(updatedPost => {
+						res.json({
+							message: 'You have successfully updated it!'
+						})
+					})
+					.catch(err => console.log(err.message));
+			} else {
+				const err = new Error('You should have one post for that number');
+				res.status(404).json({
+					message: err.message
+				});
 			}
-        })
-        .catch(err => console.log(err.message));
+		})
+		.catch(err => console.log(err.message));
 }
 
 

@@ -1,0 +1,43 @@
+//  findOrCreate({where})  find a phone
+router.post('/textit/name', function(req, res) {
+    jobPost.findOne({where: { phone: req.body.phoneNumberFromWebHook}}).then(function(jb){
+        jb.update({name: req.body.name}).then(function(){
+            res.json(jb)
+        });
+    });
+});
+
+
+router.post('/textit/role', function(req, res) {
+    jobPost.findOne({where: { phone: req.body.phoneNumberFromWebHook}}).then(function(jb){
+        jb.update({role: req.body.role}).then(function(){
+            res.json(jb)
+        });
+    });
+});
+
+router.post('/textit/location', function(req, res){
+    jobPost.findOne({where: {phone: req.body.phoneNumberFromWebHook}}).then(function(jb){
+jb.update({role: req.body.location}).then(function(){
+            res.json(jb)
+        });
+    });
+});
+
+router.post('/textit/skills', function(req, res) {
+    jobPost.findOne({where: { phone: req.body.phoneNumberFromWebHook}}).then(function(jb){
+        jb.update({role: req.body.skills}).then(function(){
+            res.json(jb)
+        });
+    });
+});
+
+router.post('/textit/hourly', function(req, res) {
+    jobPost.findOne({where: { phone: req.body.phoneNumberFromWebHook}}).then(function(jb){
+        jb.update({role: req.body.hourly}).then(function(){
+            res.json(jb)
+        });
+    });
+});
+
+//make a special post for each secition    
