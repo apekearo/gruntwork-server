@@ -1,6 +1,4 @@
-/**
- * Created by chengluli on 08/08/2017.
- */
+
 var faker = require('faker');
 var db = require('../models');
 
