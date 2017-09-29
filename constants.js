@@ -1,6 +1,4 @@
-/**
- * Created by chengluli on 09/09/2017.
- */
+
 module.exports = {
   jobPost: {
       payAmount: 1,

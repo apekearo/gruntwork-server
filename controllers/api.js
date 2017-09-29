@@ -4,7 +4,7 @@ var router = express.Router();
 // These three lines should be put outside of the fuction
 	// on top of the file
 	 const accountSid = 'AC7aa3c87df5d67ff71d034fa21d97f564';
-	 const authToken = '1ee04980696810bea25d604b8d56f9f5';
+	 const authToken = '98c303823fa9f4a971b70d5b8fe3e6bc';
 	 const client = require('twilio')(accountSid, authToken);
 
 // User APIs
@@ -13,8 +13,6 @@ var router = express.Router();
 // get all employers
 
 router.post('textit/posts', function (req, res) {
-	
-
 	var phone = req.body.phone;
 	var zipCode = req.body.text;
 
@@ -27,12 +25,13 @@ router.post('textit/posts', function (req, res) {
 			['createdAt', 'DESC']
 		]
 	}).then(post => {
+		console.log(post)
 		var text = `Pay Amount: ${post.payAmount}\n 
 		phone number: ${post.phone}` 
 		// Step2: send the jobpost back to users 
 		client.messages.create({
 				body: text, // here is your text message
-				to: phone, // replace this with use's phone number
+				to: phone, // replace this with user's phone number
 				from: '+12544002317',
 			})
 			.then((message) => {
