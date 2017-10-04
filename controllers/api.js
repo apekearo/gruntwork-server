@@ -12,10 +12,10 @@ var router = express.Router();
 // get all employees
 // get all employers
 
-router.post('textit/posts', function (req, res) {
+router.post('/textit/posts', function (req, res) {
 	var phone = req.body.phone;
 	var zipCode = req.body.text;
-
+    
 	// Step1: get the first jobPost data with sequelize near the zip code
 	db.JobPost.findOne({
 		where: {
@@ -25,7 +25,7 @@ router.post('textit/posts', function (req, res) {
 			['createdAt', 'DESC']
 		]
 	}).then(post => {
-		console.log(post)
+		console.log(post);
 		var text = `Pay Amount: ${post.payAmount}\n 
 		phone number: ${post.phone}` 
 		// Step2: send the jobpost back to users 
@@ -40,9 +40,14 @@ router.post('textit/posts', function (req, res) {
 				res.json({
 					message: 'Text has been sent'
 				})
-			});
-	})
+			}).catch(err => {
+				console.log(err)
+			})
+	}).catch(err => {
+				console.log(err)
+			})
 })
+
 
 router.post('/textit/:question', function (req, res) {
 	const question = req.params.question;
