@@ -2,10 +2,10 @@ var express = require("express");
 var db = require("../models");
 var router = express.Router();
 // These three lines should be put outside of the fuction
-	// on top of the file
-	 const accountSid = 'AC7aa3c87df5d67ff71d034fa21d97f564';
-	 const authToken = '98c303823fa9f4a971b70d5b8fe3e6bc';
-	 const client = require('twilio')(accountSid, authToken);
+// on top of the file
+const accountSid = 'AC7aa3c87df5d67ff71d034fa21d97f564';
+const authToken = '98c303823fa9f4a971b70d5b8fe3e6bc';
+const client = require('twilio')(accountSid, authToken);
 
 // User APIs
 // get all users
@@ -15,7 +15,7 @@ var router = express.Router();
 router.post('/textit/posts', function (req, res) {
 	var phone = req.body.phone;
 	var zipCode = req.body.text;
-    
+
 	// Step1: get the first jobPost data with sequelize near the zip code
 	db.JobPost.findOne({
 		where: {
@@ -27,7 +27,7 @@ router.post('/textit/posts', function (req, res) {
 	}).then(post => {
 		console.log(post);
 		var text = `Pay Amount: ${post.payAmount}\n 
-		phone number: ${post.phone}` 
+		phone number: ${post.phone}`
 		// Step2: send the jobpost back to users 
 		client.messages.create({
 				body: text, // here is your text message
@@ -44,17 +44,23 @@ router.post('/textit/posts', function (req, res) {
 				console.log(err)
 			})
 	}).catch(err => {
-				console.log(err)
-			})
+		console.log(err)
+	})
 })
 
 
-router.post('/textit/:question', function (req, res) {
-	const question = req.params.question;
-	const value = req.body.text.trim().toLowerCase();
-	const phone = req.body.phone;
+router.post('/sms', function (req, res) {
+	// const question = req.params.question;
+	let currentStep = req.cookies.currentStep || 0;
+	currentStep = parseInt(currentStep);
+	const value = req.body.Body.trim().toLowerCase();
+	const phone = req.body.From;
 
+	if (value === 'hello' || value === 'reset') {
+		currentStep = 0
+	}
 	console.log(value, phone);
+	console.log(`The current step is ${currentStep}`);
 	if (!value) {
 		res.status(400).json({
 			message: 'you texted the wrong word, get thelettersright.'
@@ -62,30 +68,44 @@ router.post('/textit/:question', function (req, res) {
 		return;
 	}
 
-	switch (question) {
-		case 'role':
+	switch (currentStep) {
+		case 0:
+			sendTextMessage(res, currentStep + 1, 'Are you an emloyer or employee?', phone)();
+			res.end();
+			break;
+		case 1:
+			// Do a checking on the incoming value to see whether the value is waht you are 
+			// expecting. Else, you DO NOT change the current step, instead, you just keep
+			// sending the same message until you get what you ask for! e.g.
+			/**
+			 * if (value !== 'employer' || value !== 'employee') {
+			 * 		1. send a message to tell the user he/she is a dumbass
+			 * 		2. end the request by return res.end()
+			 * }
+			 */
 			db.JobPost.create({
 					phone,
 					role: value
 				})
 				.then(post => {
+					sendTextMessage(res, currentStep + 1, 'What is your zip code?', phone)()
 					res.json({
 						hasDone: post.hasFinishedCreation()
 					})
 				})
 				.catch(err => console.log(err.message));
+			break
+		case 2:
+			updatePost(phone, res, 'locationZip', value, sendTextMessage(res, currentStep + 1, 'What is your job about?', phone));
 			break;
-		case 'payAmount':
-			updatePost(phone, res, question, value);
+		case 3:
+			updatePost(phone, res, 'description', value, sendTextMessage(res, currentStep + 1, 'What is the pay amount?', phone));
 			break;
-		case 'description':
-			updatePost(phone, res, question, value);
+		case 4:
+			updatePost(phone, res, 'payAmount', value, sendTextMessage(res, currentStep + 1, 'Do you have a car?', phone));
 			break;
-		case 'hasCar':
-			updatePost(phone, res, question, value);
-			break;
-		case 'locationZip':
-			updatePost(phone, res, question, value);
+		case 5:
+			updatePost(phone, res, 'hasCar', value, sendTextMessage(res, 0, 'Than you for posting!', phone));
 			break;
 		default:
 			res.status(401).json({
@@ -104,7 +124,7 @@ router.post('/textit/:question', function (req, res) {
  * @param {any} value - what is the new value of that jobPost's key
  * @returns {Promise.<TResult>}
  */
-function updatePost(phone, res, key, value) {
+function updatePost(phone, res, key, value, cb) {
 	// If you want to always have only ONE record in the database of a jobpost with that phone
 	// number, use findOrCreate instead of findOne. findOne will create a new record in the database
 	// each time a 'role' question got answered
@@ -122,6 +142,9 @@ function updatePost(phone, res, key, value) {
 						[key]: value
 					})
 					.then(updatedPost => {
+						if (cb) {
+							cb()
+						}
 						res.json({
 							message: 'You have successfully updated it!'
 						})
@@ -137,6 +160,21 @@ function updatePost(phone, res, key, value) {
 		.catch(err => console.log(err.message));
 }
 
+const sendTextMessage = (res, nextStep, message, phone) => () => {
+	res.cookie('currentStep', nextStep, {
+		maxAge: 900000
+	})
+	client.messages.create({
+			body: message, // here is your text message
+			to: phone, // replace this with user's phone number
+			from: '+12544002317',
+		})
+		.then((message) => {
+			console.log(`Yay! Message ${message} sent to phone ${phone}!`)
+		}).catch(err => {
+			console.log(err)
+		})
+}
 
 //!!!Why doesn't the models all require sequalize!!
 //first question    ;;; 
