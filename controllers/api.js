@@ -4,7 +4,7 @@ var router = express.Router();
 // These three lines should be put outside of the fuction
 // on top of the file
 const accountSid = 'AC7aa3c87df5d67ff71d034fa21d97f564';
-const authToken = '98c303823fa9f4a971b70d5b8fe3e6bc';
+const authToken = '';
 const client = require('twilio')(accountSid, authToken);
 
 // User APIs
