@@ -26,8 +26,9 @@ router.post('/textit/posts', function (req, res) {
 		]
 	}).then(post => {
 		console.log(post);
-		var text = `Pay Amount: ${post.payAmount}\n 
-		phone number: ${post.phone}`
+		var text = `Pay Amount: ${post.payAmount}
+		Work Description: ${post.description}
+		Phone number: ${post.phone}`
 		// Step2: send the jobpost back to users 
 		client.messages.create({
 				body: text, // here is your text message
@@ -70,7 +71,7 @@ router.post('/sms', function (req, res) {
 
 	switch (currentStep) {
 		case 0:
-			sendTextMessage(res, currentStep + 1, 'Are you an emloyer or employee?', phone)();
+			sendTextMessage(res, currentStep + 1, 'Are you an employer or employee?', phone)();
 			res.end();
 			break;
 		case 1:
@@ -82,6 +83,14 @@ router.post('/sms', function (req, res) {
 			 * 		1. send a message to tell the user he/she is a dumbass
 			 * 		2. end the request by return res.end()
 			 * }
+			 * ADD JOB DESCRIPTION TO VIEW. with a question asking if they would like to view another zip
+			 *  IN THE BRANCH THATS USING TEXTIT
+			 * 
+			 * HOW DO I GET IT TO DELETE EVERY WEEK EACH POSTING, AND MAYBE ONLY OFFER AN EMPTY
+			 * LISTING THAT SAYS THERE AREN'T NO LISTINGS
+			 * 
+			 * HOW TO DELETE FROM MY EXISTING DATABASE.  TO SET IT UP FOR FUTURE POSTS.
+			 * 
 			 */
 			db.JobPost.create({
 					phone,
@@ -105,7 +114,7 @@ router.post('/sms', function (req, res) {
 			updatePost(phone, res, 'payAmount', value, sendTextMessage(res, currentStep + 1, 'Do you have a car?', phone));
 			break;
 		case 5:
-			updatePost(phone, res, 'hasCar', value, sendTextMessage(res, 0, 'Than you for posting!', phone));
+			updatePost(phone, res, 'hasCar', value, sendTextMessage(res, 0, 'Thank you for posting!', phone));
 			break;
 		default:
 			res.status(401).json({
