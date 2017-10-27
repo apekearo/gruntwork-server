@@ -71,7 +71,7 @@ router.post('/sms', function (req, res) {
 
 	switch (currentStep) {
 		case 0:
-			sendTextMessage(res, currentStep + 1, 'Are you an employer or employee?', phone)();
+			sendTextMessage(res, currentStep + 1, 'If you need a job done text EMPLOYER. If you are offering to work text EMPLOYEE', phone)();
 			res.end();
 			break;
 		case 1:
@@ -105,16 +105,16 @@ router.post('/sms', function (req, res) {
 				.catch(err => console.log(err.message));
 			break
 		case 2:
-			updatePost(phone, res, 'locationZip', value, sendTextMessage(res, currentStep + 1, 'What is your job about?', phone));
+			updatePost(phone, res, 'locationZip', value, sendTextMessage(res, currentStep + 1, 'What is the zip code you wish to post in?', phone));
 			break;
 		case 3:
-			updatePost(phone, res, 'description', value, sendTextMessage(res, currentStep + 1, 'What is the pay amount?', phone));
+			updatePost(phone, res, 'description', value, sendTextMessage(res, currentStep + 1, 'Describe the work your offering?', phone));
 			break;
 		case 4:
-			updatePost(phone, res, 'payAmount', value, sendTextMessage(res, currentStep + 1, 'Do you have a car?', phone));
+			updatePost(phone, res, 'payAmount', value, sendTextMessage(res, currentStep + 1, 'Hourly amount offered or desired.', phone));
 			break;
 		case 5:
-			updatePost(phone, res, 'hasCar', value, sendTextMessage(res, 0, 'Thank you for posting!', phone));
+			updatePost(phone, res, 'hasCar', value, sendTextMessage(res, 0, 'Do you have a car?', phone));
 			break;
 		default:
 			res.status(401).json({
