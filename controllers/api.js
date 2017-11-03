@@ -92,6 +92,11 @@ router.post('/sms', function (req, res) {
 			 * HOW TO DELETE FROM MY EXISTING DATABASE.  TO SET IT UP FOR FUTURE POSTS.
 			 * 
 			 */
+			if (value !== 'employer' || value !== 'employee') {
+				sendTextMessage(res, currentStep + 1, "Send only the word 'EMPLOYEE' or 'EMPLOYER'", phone)();
+				return res.end()
+			}
+
 			db.JobPost.create({
 					phone,
 					role: value
