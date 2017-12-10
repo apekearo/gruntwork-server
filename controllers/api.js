@@ -4,7 +4,10 @@ const Op = db.Sequelize.Op
 var router = express.Router();
 // These three lines should be put outside of the fuction
 // on top of the file
-const configs = require('../config/secrets.js');
+let configs = {};
+if (process.env.NODE_ENV === 'development') {
+	configs = require('../config/secrets.js')
+}
 const accountSid = process.env.TWILLIO_ACCOUNTSID || configs.twilio_accountSid;
 const authToken = process.env.TWILLIO_AUTHTOKEN || configs.twilio_authtoken;
 const client = require('twilio')(accountSid, authToken);
