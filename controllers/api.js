@@ -1,16 +1,44 @@
 var express = require("express");
 var db = require("../models");
+const Op = db.Sequelize.Op
 var router = express.Router();
 // These three lines should be put outside of the fuction
 // on top of the file
-const accountSid = 'AC7aa3c87df5d67ff71d034fa21d97f564';
-const authToken = '98c303823fa9f4a971b70d5b8fe3e6bc';
+const configs = require('../config/secrets.js');
+const accountSid = process.env.TWILLIO_ACCOUNTSID || configs.twilio_accountSid;
+const authToken = process.env.TWILLIO_AUTHTOKEN || configs.twilio_authtoken;
 const client = require('twilio')(accountSid, authToken);
+var schedule = require('node-schedule');
 
 // User APIs
 // get all users
 // get all employees
 // get all employers
+//TONY I WANT YOU TO UNDERSTAND AND ADD NOTES TO EVERY CODE, AND BRANCH
+//FIX THE DAMN STYLING ASAP PLEASE BOY
+//first off change the damn style all together, for real fuck vuetify or use its cdn
+//  damn it as a dream,, add text bitcoin api payment option to hey earl
+
+//you need to make it way more functional, the name of the user shit needs to look good
+
+//add the links to the heroku add you added named OPBEAT
+
+//YOU MUST RECORD YOURE NEXT TIME WITH CHENGLU
+
+//adding cron scheduling to the mysql posts
+var j = schedule.scheduleJob('30 4 * * *', function(){
+	//
+	const today = new Date();
+	const predicate = new Date(today -  7 * 24 * 60 * 60 * 1000); 
+	db.JobPost.destroy({
+		where: {
+			createdAt: {
+				[Op.lt]: predicate,
+			}
+		}
+	})
+	console.log('The universe is coming to an end after this week!')
+})
 
 router.post('/textit/posts', function (req, res) {
 	var phone = req.body.phone;
@@ -57,21 +85,21 @@ router.post('/sms', function (req, res) {
 	const value = req.body.Body.trim().toLowerCase();
 	const phone = req.body.From;
 
-	if (value === 'hello' || value === 'reset') {
+	if (value === 'hello' || value === 'reset' || value === 'hey earl') {
 		currentStep = 0
 	}
 	console.log(value, phone);
 	console.log(`The current step is ${currentStep}`);
 	if (!value) {
 		res.status(400).json({
-			message: 'you texted the wrong word, get thelettersright.'
+			message: 'To use Hey Earl List, please type the work HELLO or HEY EARL'
 		});
 		return;
 	}
 
 	switch (currentStep) {
 		case 0:
-			sendTextMessage(res, currentStep + 1, 'If you need a job done text EMPLOYER. If you are offering to work text EMPLOYEE', phone)();
+			sendTextMessage(res, currentStep + 1, 'If you want a job done text EMPLOYER. If you are offering to work text EMPLOYEE', phone)();
 			res.end();
 			break;
 		case 1:
@@ -93,7 +121,7 @@ router.post('/sms', function (req, res) {
 			 * 
 			 */
 			if (value !== 'employer' || value !== 'employee') {
-				sendTextMessage(res, currentStep + 1, "Send only the word 'EMPLOYEE' or 'EMPLOYER'", phone)();
+				sendTextMessage(res, currentStep, "Send only the word 'EMPLOYEE' or 'EMPLOYER'", phone)();
 				return res.end()
 			}
 
@@ -110,16 +138,18 @@ router.post('/sms', function (req, res) {
 				.catch(err => console.log(err.message));
 			break
 		case 2:
-			updatePost(phone, res, 'locationZip', value, sendTextMessage(res, currentStep + 1, 'What is the zip code you wish to post in?', phone));
+				// if(value  regex  the if statement does doesnt add +1 step			// Using regex to check whether the value is a valid zip code
+				// var isValidZip = /(^\d{5}(-\d{4})?$/.test("76652");
+				updatePost(phone, res, 'locationZip', value, sendTextMessage(res, currentStep + 1, 'Briefly give a few words about the work you are offering?', phone));
 			break;
 		case 3:
-			updatePost(phone, res, 'description', value, sendTextMessage(res, currentStep + 1, 'Describe the work your offering?', phone));
+			updatePost(phone, res, 'description', value, sendTextMessage(res, currentStep + 1, 'Hourly amount offered or desired? Please reply with a number only.', phone));
 			break;
 		case 4:
-			updatePost(phone, res, 'payAmount', value, sendTextMessage(res, currentStep + 1, 'Hourly amount offered or desired.', phone));
+			updatePost(phone, res, 'payAmount', value, sendTextMessage(res, currentStep + 1, 'Reply *YES* if you offer transportation for your workers or if you have transportation to get to gig location. Text *NO* if you need transportation.', phone));
 			break;
 		case 5:
-			updatePost(phone, res, 'hasCar', value, sendTextMessage(res, 0, 'Do you have a car?', phone));
+			updatePost(phone, res, 'hasCar', value, sendTextMessage(res, 0, 'Thank you for using hey earl, your post will be public for a week! You can post again after that.', phone));
 			break;
 		default:
 			res.status(401).json({
