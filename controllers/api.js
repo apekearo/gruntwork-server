@@ -5,7 +5,10 @@ var router = express.Router();
 // These three lines should be put outside of the fuction
 // on top of the file
 let configs = {};
-if (process.env.NODE_ENV === 'development') {
+//if the process is in development it will refer to secrets
+//but if its production then it will refer to heroku's secrets section. 
+//and the production heroku refers to the tokens acountSid and authToken
+if (process.env.NODE_ENV !== 'production') {
 	configs = require('../config/secrets.js')
 }
 const accountSid = process.env.TWILLIO_ACCOUNTSID || configs.twilio_accountSid;
@@ -30,17 +33,23 @@ var schedule = require('node-schedule');
 
 //adding cron scheduling to the mysql posts
 var j = schedule.scheduleJob('30 4 * * *', function(){
-	//
+	// it should trigger ever day at 4:30 in the morning
+	// and check if the the posts are older than 7 days
 	const today = new Date();
+	// new date() is Js for today's time and date
+	//  below is adding miliseconds to seconds to minutes to hours to days, less than todays date
+	// and if its a less than the date number seven days ago, then it will delete the post,
 	const predicate = new Date(today -  7 * 24 * 60 * 60 * 1000); 
 	db.JobPost.destroy({
 		where: {
 			createdAt: {
+				//below is a sequalize key thats why its in brakets, that means less than the predicate
+				//so it deletes or destroys it from the data base
 				[Op.lt]: predicate,
 			}
 		}
 	})
-	console.log('The universe is coming to an end after this week!')
+	
 })
 
 router.post('/textit/posts', function (req, res) {
