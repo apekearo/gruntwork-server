@@ -16,6 +16,7 @@ const authToken = process.env.TWILLIO_AUTHTOKEN || configs.twilio_authtoken;
 const client = require('twilio')(accountSid, authToken);
 var schedule = require('node-schedule');
 
+const phoneBook = {};
 // User APIs
 // get all users
 // get all employees
@@ -92,13 +93,13 @@ router.post('/textit/posts', function (req, res) {
 
 router.post('/sms', function (req, res) {
 	// const question = req.params.question;
-	let currentStep = req.cookies.currentStep || 0;
-	currentStep = parseInt(currentStep);
 	const value = req.body.Body.trim().toLowerCase();
 	const phone = req.body.From;
+	let currentStep = phoneBook[phone] || 0;
+	currentStep = parseInt(currentStep);
 
 	if (value === 'hello' || value === 'reset' || value === 'hey earl') {
-		currentStep = 0
+		phoneBook[phone] = 0;
 	}
 	console.log(value, phone);
 	console.log(`The current step is ${currentStep}`);
@@ -111,7 +112,7 @@ router.post('/sms', function (req, res) {
 
 	switch (currentStep) {
 		case 0:
-			sendTextMessage(res, currentStep + 1, 'If you want a job done text EMPLOYER. If you are offering to work text EMPLOYEE', phone)();
+			sendTextMessage(res, currentStep += 1, 'If you want a job done text EMPLOYER. If you are offering to work text EMPLOYEE', phone)();
 			res.end();
 			break;
 		case 1:
@@ -132,7 +133,8 @@ router.post('/sms', function (req, res) {
 			 * HOW TO DELETE FROM MY EXISTING DATABASE.  TO SET IT UP FOR FUTURE POSTS.
 			 * 
 			 */
-			if (value !== 'employer' || value !== 'employee') {
+			console.log(value, value === 'employee');
+			if (value !== 'employer' && value !== 'employee') {
 				sendTextMessage(res, currentStep, "Send only the word 'EMPLOYEE' or 'EMPLOYER'", phone)();
 				return res.end()
 			}
@@ -142,7 +144,7 @@ router.post('/sms', function (req, res) {
 					role: value
 				})
 				.then(post => {
-					sendTextMessage(res, currentStep + 1, 'What is your zip code?', phone)()
+					sendTextMessage(res, currentStep += 1, 'What is your zip code?', phone)()
 					res.json({
 						hasDone: post.hasFinishedCreation()
 					})
@@ -152,16 +154,22 @@ router.post('/sms', function (req, res) {
 		case 2:
 				// if(value  regex  the if statement does doesnt add +1 step			// Using regex to check whether the value is a valid zip code
 				// var isValidZip = /(^\d{5}(-\d{4})?$/.test("76652");
-				updatePost(phone, res, 'locationZip', value, sendTextMessage(res, currentStep + 1, 'Briefly give a few words about the work you are offering?', phone));
+				updatePost(phone, res, 'locationZip', value, sendTextMessage(res, currentStep += 1, 'Briefly give a few words about the work you are offering?', phone));
 			break;
 		case 3:
-			updatePost(phone, res, 'description', value, sendTextMessage(res, currentStep + 1, 'Hourly amount offered or desired? Please reply with a number only.', phone));
+			updatePost(phone, res, 'description', value, sendTextMessage(res, currentStep += 1, 'Hourly amount offered or desired? Please reply with a number only.', phone));
 			break;
 		case 4:
-			updatePost(phone, res, 'payAmount', value, sendTextMessage(res, currentStep + 1, 'Reply *YES* if you offer transportation for your workers or if you have transportation to get to gig location. Text *NO* if you need transportation.', phone));
+			updatePost(phone, res, 'payAmount', value, sendTextMessage(res, currentStep += 1, 'Reply *YES* if you offer transportation for your workers or if you have transportation to get to gig location. Text *NO* if you need transportation.', phone));
 			break;
 		case 5:
-			updatePost(phone, res, 'hasCar', value, sendTextMessage(res, 0, 'Thank you for using hey earl, your post will be public for a week! You can post again after that.', phone));
+		    if (value !== 'yes' && value !== 'no') {
+				sendTextMessage(res, currentStep, "Send only 'YES' or 'NO'", phone)();
+				return res.end()
+			}
+		// Sequelize wants a boolean so this is our way of giving it a boolean ,,  the value will still be a string
+			const answer = value === 'yes'; 
+			updatePost(phone, res, 'hasCar', answer, sendTextMessage(res, 0, 'Thank you for using hey earl, your post will be public for a week! You can post again after that.', phone));
 			break;
 		default:
 			res.status(401).json({
@@ -217,9 +225,7 @@ function updatePost(phone, res, key, value, cb) {
 }
 
 const sendTextMessage = (res, nextStep, message, phone) => () => {
-	res.cookie('currentStep', nextStep, {
-		maxAge: 900000
-	})
+	phoneBook[phone] = nextStep;
 	client.messages.create({
 			body: message, // here is your text message
 			to: phone, // replace this with user's phone number
@@ -227,6 +233,7 @@ const sendTextMessage = (res, nextStep, message, phone) => () => {
 		})
 		.then((message) => {
 			console.log(`Yay! Message ${message} sent to phone ${phone}!`)
+			res.end();
 		}).catch(err => {
 			console.log(err)
 		})
