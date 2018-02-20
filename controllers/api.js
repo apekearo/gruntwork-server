@@ -225,6 +225,10 @@ function updatePost(phone, res, key, value, cb) {
 }
 
 const sendTextMessage = (res, nextStep, message, phone) => () => {
+	// const phoneBook= {
+	// 	"+1858262332": 1,
+	// 	"+11234567123": 3,
+	// }
 	phoneBook[phone] = nextStep;
 	client.messages.create({
 			body: message, // here is your text message

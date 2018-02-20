@@ -1,4 +1,3 @@
-var opbeat = require('opbeat').start()
 var express = require ("express");
 var bodyParser= require("body-parser");
 var cookieParser = require('cookie-parser');
@@ -29,12 +28,7 @@ app.use('*', function (req, res){
     // res.render('./views/index.html')
     res.sendFile('./public/index.html', { root: __dirname });
 });
-//adding opbeat heroku module
-app.use(opbeat.middleware.express())
-// app.use(function(err, req, res, next) {
-//     console.log(err);
-//     next();
-// })
+
 
 db.sequelize.sync().then(function(){
     app.listen(PORT, function() {
