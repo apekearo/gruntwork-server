@@ -95,11 +95,14 @@ router.post('/sms', function (req, res) {
 	// const question = req.params.question;
 	const value = req.body.Body.trim().toLowerCase();
 	const phone = req.body.From;
-	let currentStep = phoneBook[phone] || 0;
+	// destructuring of objects
+	let { nextStep: currentStep = 0, viewing } = phoneBook[phone] || {};
 	currentStep = parseInt(currentStep);
 
 	if (value === 'hello' || value === 'reset' || value === 'hey earl') {
-		phoneBook[phone] = 0;
+		phoneBook[phone] = { nextStep: 0, viewing: false };
+		currentStep = 0;
+		viewing = false;
 	}
 	console.log(value, phone);
 	console.log(`The current step is ${currentStep}`);
@@ -111,11 +114,50 @@ router.post('/sms', function (req, res) {
 	}
 
 	switch (currentStep) {
-		case 0:
+		case 0: 
+		sendTextMessage(res, currentStep += 1, "Post or View?", phone)();
+		break;
+		case 1:
+		if (value !== 'post' && value !== 'view') {
+			sendTextMessage(res, currentStep, "Please type POST or VIEW.", phone)();
+			break;
+		}
+		if (value === 'view') {
+			sendTextMessage(res, currentStep += 1, 'What is the zip code?', phone, true)();
+			break;
+		}
+		if (value === 'post') {
 			sendTextMessage(res, currentStep += 1, 'If you want a job done text EMPLOYER. If you are offering to work text EMPLOYEE', phone)();
 			res.end();
 			break;
-		case 1:
+		}			
+		case 2:
+			if (viewing) {
+				const isValidZip = /(^\d{5}$)|(^\d{5}-\d{4}$)/.test(value)
+				if (isValidZip) {
+					db.JobPost.findAll({
+						where: {
+							locationZip: value
+						}
+					})
+					.then(posts => {
+						const postMsgs = posts
+						.map((post, idx) => (
+							`Post ${idx + 1}:\n
+								Phone: ${post.phone},\n
+								Description: ${post.description},\n
+								Hourly Pay: ${post.payAmount}\n
+							`
+						))
+						.join('\n')
+						sendTextMessage(res, currentStep += 1, postMsgs || 'No post in this area!', phone)()
+					})
+					break;
+				} else {
+					sendTextMessage(res, currentStep, 'Invalid zip code', phone)();
+					break;
+				}
+			}
 			// Do a checking on the incoming value to see whether the value is waht you are 
 			// expecting. Else, you DO NOT change the current step, instead, you just keep
 			// sending the same message until you get what you ask for! e.g.
@@ -151,18 +193,18 @@ router.post('/sms', function (req, res) {
 				})
 				.catch(err => console.log(err.message));
 			break
-		case 2:
+		case 3:
 				// if(value  regex  the if statement does doesnt add +1 step			// Using regex to check whether the value is a valid zip code
 				// var isValidZip = /(^\d{5}(-\d{4})?$/.test("76652");
 				updatePost(phone, res, 'locationZip', value, sendTextMessage(res, currentStep += 1, 'Briefly give a few words about the work you are offering?', phone));
 			break;
-		case 3:
+		case 4:
 			updatePost(phone, res, 'description', value, sendTextMessage(res, currentStep += 1, 'Hourly amount offered or desired? Please reply with a number only.', phone));
 			break;
-		case 4:
+		case 5:
 			updatePost(phone, res, 'payAmount', value, sendTextMessage(res, currentStep += 1, 'Reply *YES* if you offer transportation for your workers or if you have transportation to get to gig location. Text *NO* if you need transportation.', phone));
 			break;
-		case 5:
+		case 6:
 		    if (value !== 'yes' && value !== 'no') {
 				sendTextMessage(res, currentStep, "Send only 'YES' or 'NO'", phone)();
 				return res.end()
@@ -224,19 +266,19 @@ function updatePost(phone, res, key, value, cb) {
 		.catch(err => console.log(err.message));
 }
 
-const sendTextMessage = (res, nextStep, message, phone) => () => {
+const sendTextMessage = (res, nextStep, message, phone, viewing = false) => () => {
 	// const phoneBook= {
 	// 	"+1858262332": 1,
 	// 	"+11234567123": 3,
 	// }
-	phoneBook[phone] = nextStep;
+	phoneBook[phone] = { nextStep, viewing: viewing || phoneBook[phone].viewing };
 	client.messages.create({
 			body: message, // here is your text message
 			to: phone, // replace this with user's phone number
 			from: '+12544002317',
 		})
 		.then((message) => {
-			console.log(`Yay! Message ${message} sent to phone ${phone}!`)
+			console.log(`Yay! Message ${message.toString()} sent to phone ${phone}!`)
 			res.end();
 		}).catch(err => {
 			console.log(err)
