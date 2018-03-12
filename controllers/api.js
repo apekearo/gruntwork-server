@@ -144,9 +144,9 @@ router.post('/sms', function (req, res) {
 						const postMsgs = posts
 						.map((post, idx) => (
 							`Post ${idx + 1}:\n
-								Phone: ${post.phone},\n
-								Description: ${post.description},\n
-								Hourly Pay: ${post.payAmount}\n
+							  Phone: ${post.phone},\n
+							  Description: ${post.description},\n
+							  Hourly Pay: ${post.payAmount}\n
 							`
 						))
 						.join('\n')
