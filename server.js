@@ -1,5 +1,6 @@
 var express = require ("express");
 var bodyParser= require("body-parser");
+var cookieParser = require('cookie-parser');
 var morgan = require("morgan");
 
 var PORT = process.env.PORT || 3000;
@@ -16,6 +17,7 @@ var allowCrossDomain = function(req, res, next) {
 }
 
 app.use(morgan("dev"));
+app.use(cookieParser())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.text());
@@ -27,10 +29,6 @@ app.use('*', function (req, res){
     res.sendFile('./public/index.html', { root: __dirname });
 });
 
-// app.use(function(err, req, res, next) {
-//     console.log(err);
-//     next();
-// })
 
 db.sequelize.sync().then(function(){
     app.listen(PORT, function() {
