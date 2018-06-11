@@ -146,7 +146,8 @@ router.post('/sms', function (req, res) {
 							`Post ${idx + 1}:\n
 							  Phone: ${post.phone},\n
 							  Description: ${post.description},\n
-							  Hourly Pay: ${post.payAmount}\n
+							  Hourly Pay: ${post.payAmount},\n
+							  Has Transportation: ${post.hasCar}\n
 							`
 						))
 						.join('\n')
@@ -415,7 +416,7 @@ router.put("/user/:id", function (req, res) {
 				});
 			} else {
 				res.status(403).json({
-					message: `There is no such as user ${id}! You idiot!`
+					message: `There is no such as user ${id}! You liar!`
 				});
 			}
 		})
@@ -441,7 +442,7 @@ router.delete("/user/:id", function (req, res) {
 				});
 			} else {
 				res.status(403).json({
-					message: `There is no such as user ${id}! You idiot!`
+					message: `There is no such as user ${id}! You fibber!`
 				});
 			}
 		})
@@ -498,7 +499,7 @@ router.post('/login', function (req, res) {
 		.then(user => {
 			if (user.password !== password) {
 				res.status(401).json({
-					message: 'You ain\'t no my master'
+					message: 'You ain\'t no master'
 				})
 			}
 			delete user.dataValues.password;
